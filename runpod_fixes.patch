@@ -1,0 +1,55 @@
+diff --git a/hyvideo/commons/__init__.py b/hyvideo/commons/__init__.py
+index a59b44b..39654f9 100644
+--- a/hyvideo/commons/__init__.py
++++ b/hyvideo/commons/__init__.py
+@@ -228,8 +228,14 @@ def maybe_fallback_attn_mode(attn_mode):
+ @contextmanager
+ def auto_offload_model(models, device, enabled=True):
+     from diffusers.hooks.group_offloading import _is_group_offload_enabled
++    if models is None:
++        yield
++        return
+     if enabled:
+         if isinstance(models, nn.Module):
++            if _is_group_offload_enabled(models):
++                yield
++                return
+             models = [models]
+         for model in models:
+             if model is not None:
+diff --git a/hyvideo/pipelines/hunyuan_video_pipeline.py b/hyvideo/pipelines/hunyuan_video_pipeline.py
+index e29f82d..974d2e6 100644
+--- a/hyvideo/pipelines/hunyuan_video_pipeline.py
++++ b/hyvideo/pipelines/hunyuan_video_pipeline.py
+@@ -1412,6 +1412,18 @@ class HunyuanVideo_1_5_Pipeline(DiffusionPipeline):
+                 group_offloading_kwargs['use_stream'] = True
+             self.transformer.enable_group_offload(**group_offloading_kwargs)
+ 
++            # Apply leaf-level group offloading to text encoder (LLM too large for full VRAM load).
++            # leaf_level moves every individual parameter to CUDA on demand, including non-block
++            # layers like embed_tokens that block_level offloading would leave on CPU.
++            if self.text_encoder is not None:
++                from diffusers.hooks.group_offloading import apply_group_offloading
++                apply_group_offloading(
++                    self.text_encoder,
++                    onload_device=torch.device('cuda'),
++                    offload_device=torch.device('cpu'),
++                    offload_type='leaf_level',
++                )
++
+     @classmethod
+     def load_sr_transformer_upsampler(cls, cached_folder, sr_version, transformer_dtype=torch.bfloat16, device=None):
+         transformer = HunyuanVideo_1_5_DiffusionTransformer.from_pretrained(
+@@ -1607,9 +1619,9 @@ class HunyuanVideo_1_5_Pipeline(DiffusionPipeline):
+     def _load_vision_encoder(cls, pretrained_model_name_or_path, device):
+         vision_encoder_path = f'{pretrained_model_name_or_path}/vision_encoder/siglip'
+         if not os.path.exists(vision_encoder_path):
+-            msg = f"{vision_encoder_path} not found. Please refer to checkpoints-download.md to download the vision encoder checkpoints."
+-            loguru.logger.error(msg)
+-            raise FileNotFoundError(msg)
++            msg = f"{vision_encoder_path} not found. Vision encoder is required for i2v tasks. For t2v tasks it will be skipped."
++            loguru.logger.warning(msg)
++            return None
+         vision_encoder = VisionEncoder(
+             vision_encoder_type="siglip",
+             vision_encoder_precision="fp16",

@@ -26,6 +26,79 @@ import openai
 from loguru import logger
 
 
+class ClaudeClient(object):
+    """Drop-in replacement for QwenClient using Anthropic Claude API (T2V)."""
+
+    def __init__(self, model_name="claude-sonnet-4-6"):
+        import anthropic
+        self.client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+        self.model_name = model_name
+
+    def run_single_recaption(self, system_prompt, input_prompt, temperature=0.1, max_tokens=4096, **kwargs):
+        message = self.client.messages.create(
+            model=self.model_name,
+            max_tokens=max_tokens,
+            system=system_prompt,
+            messages=[{"role": "user", "content": input_prompt}],
+        )
+        return message.content[0].text
+
+
+class ClaudeVLClient(object):
+    """Drop-in replacement for QwenVLClient using Anthropic Claude API (I2V)."""
+
+    def __init__(self, model_name="claude-sonnet-4-6"):
+        import anthropic
+        self.client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+        self.model_name = model_name
+        self.max_image_size = int(os.getenv("I2V_REWRITE_MAX_IMAGE_SIZE", "1024"))
+
+    def _encode_image_to_base64(self, image_path, max_dimension):
+        try:
+            from PIL import Image
+        except ImportError as e:
+            logger.error("Pillow (PIL) is required but not installed.")
+            raise e
+        image = image_path
+        if not isinstance(image, Image.Image):
+            image = Image.open(image_path)
+        with image as img:
+            if img.width > max_dimension or img.height > max_dimension:
+                img.thumbnail((max_dimension, max_dimension))
+            if img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info):
+                img = img.convert("RGB")
+            buffer = io.BytesIO()
+            img.save(buffer, format="JPEG")
+            return base64.b64encode(buffer.getvalue()).decode("utf-8")
+
+    def run_single_recaption(self, system_prompt, input_prompt, temperature=0.1, max_tokens=4096, img_path=None):
+        assert img_path is not None, "img_path is required for I2V rewrite"
+        assert "{}" in system_prompt, "system_prompt must contain {}"
+        # Embed user instructions into system prompt (mirrors QwenVLClient behaviour)
+        formatted_system = system_prompt.format(input_prompt)
+        base64_image = self._encode_image_to_base64(img_path, max_dimension=self.max_image_size)
+        message = self.client.messages.create(
+            model=self.model_name,
+            max_tokens=max_tokens,
+            system=formatted_system,
+            messages=[{
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image",
+                        "source": {
+                            "type": "base64",
+                            "media_type": "image/jpeg",
+                            "data": base64_image,
+                        },
+                    },
+                    {"type": "text", "text": input_prompt},
+                ],
+            }],
+        )
+        return message.content[0].text
+
+
 class NonStreamResponse(object):
     def __init__(self):
         self.response = ""
