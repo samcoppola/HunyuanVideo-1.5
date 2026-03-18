@@ -45,16 +45,16 @@ cd "$REPO_DIR"
 echo ""
 echo "[2/4] Setting up Python virtual environment..."
 
-# Ensure a working Python with venv is available.
-# RunPod base images often ship Python 3.8 which has no venv package;
-# install 3.11 as a reliable fallback.
-if ! python3 -m venv --help &>/dev/null 2>&1; then
+# Ensure python3.11 + venv are available (RunPod base images ship Python 3.8
+# which has no venv candidate in apt).
+if ! command -v python3.11 &>/dev/null; then
     apt-get install -y python3.11 python3.11-venv
-    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
 fi
 
+PYTHON=python3.11
+
 if [ ! -d ".venv" ]; then
-    python3 -m venv .venv
+    $PYTHON -m venv .venv
 fi
 
 source .venv/bin/activate
