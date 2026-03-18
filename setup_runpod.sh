@@ -45,6 +45,11 @@ cd "$REPO_DIR"
 echo ""
 echo "[2/4] Setting up Python virtual environment..."
 
+# Ensure python3-venv is available (missing on many RunPod base images)
+if ! python3 -m venv --help &>/dev/null; then
+    apt-get install -y python3-venv
+fi
+
 if [ ! -d ".venv" ]; then
     python3 -m venv .venv
 fi
