@@ -72,7 +72,7 @@ echo "      This will take several minutes depending on your connection."
 mkdir -p "$CKPTS_DIR"
 
 # Use huggingface_hub Python API for reliable large-file downloads
-python3 - <<'PYEOF'
+"$REPO_DIR/.venv/bin/python" - <<'PYEOF'
 import os
 from huggingface_hub import snapshot_download
 
@@ -120,7 +120,7 @@ PYEOF
 echo ""
 echo "[4/4] Verifying checkpoint structure..."
 
-python3 - <<'PYEOF'
+"$REPO_DIR/.venv/bin/python" - <<'PYEOF'
 import os
 
 base = "/workspace/HunyuanVideo-1.5/ckpts"
