@@ -59,8 +59,8 @@ fi
 
 source .venv/bin/activate
 
-pip install --upgrade pip --quiet
-pip install -r requirements.txt --quiet
+pip install --upgrade pip -q
+pip install -r requirements.txt
 
 echo "    Dependencies installed."
 
