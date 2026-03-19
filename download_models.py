@@ -25,7 +25,19 @@ snapshot_download(
 )
 print("Fatto.")
 
-# ── 2. Download Qwen2.5-VL-7B-Instruct (text encoder LLM, ~21 GB) ─
+# ── 2. Download byt5-small (~1.2 GB) ──────────────────────────────
+byt5_marker = f"{CKPTS}/text_encoder/byt5-small/config.json"
+if os.path.exists(byt5_marker):
+    print("byt5-small gia' presente, salto.")
+else:
+    print("Scarico byt5-small (~1.2 GB)...")
+    snapshot_download(
+        repo_id="google/byt5-small",
+        local_dir=f"{CKPTS}/text_encoder/byt5-small",
+    )
+    print("byt5-small scaricato.")
+
+# ── 3. Download Qwen2.5-VL-7B-Instruct (text encoder LLM, ~21 GB) ─
 llm_marker = f"{CKPTS}/text_encoder/llm/config.json"
 if os.path.exists(llm_marker):
     print("text_encoder/llm gia' presente, salto.")
