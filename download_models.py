@@ -8,8 +8,8 @@ from huggingface_hub import snapshot_download
 HF_TOKEN = os.environ.get("HF_TOKEN", "")
 CKPTS = "/workspace/HunyuanVideo-1.5/ckpts"
 
-# ── 1. Download everything except the big transformer file ─────────
-print("Scarico text_encoder, vae, scheduler, config...")
+# ── 1. Download vae, scheduler, config from HunyuanVideo-1.5 ──────
+print("Scarico vae, scheduler, config...")
 snapshot_download(
     repo_id="tencent/HunyuanVideo-1.5",
     local_dir=CKPTS,
@@ -19,12 +19,23 @@ snapshot_download(
         "NOTICE",
         "README*.md",
         "scheduler/**",
-        "text_encoder/**",
         "vae/**",
         "transformer/480p_t2v_distilled/config.json",
     ],
 )
 print("Fatto.")
+
+# ── 2. Download Qwen2.5-VL-7B-Instruct (text encoder LLM, ~21 GB) ─
+llm_marker = f"{CKPTS}/text_encoder/llm/config.json"
+if os.path.exists(llm_marker):
+    print("text_encoder/llm gia' presente, salto.")
+else:
+    print("Scarico Qwen2.5-VL-7B-Instruct (~21 GB)...")
+    snapshot_download(
+        repo_id="Qwen/Qwen2.5-VL-7B-Instruct",
+        local_dir=f"{CKPTS}/text_encoder/llm",
+    )
+    print("LLM scaricato.")
 
 # ── 2. Download the big transformer with wget -c (resumable) ───────
 transformer_dir = f"{CKPTS}/transformer/480p_t2v_distilled"
