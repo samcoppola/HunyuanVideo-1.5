@@ -46,7 +46,21 @@ cmd.append(url)
 
 result = subprocess.run(cmd)
 if result.returncode == 0:
-    print("Download completo.")
+    print("Transformer scaricato.")
 else:
     print(f"wget uscito con codice {result.returncode} — rilanciare lo script per riprendere.")
     exit(1)
+
+# ── 3. Download Glyph-SDXL-v2 (byT5 glyph model) from ModelScope ──
+glyph_dir = f"{CKPTS}/text_encoder/Glyph-SDXL-v2"
+glyph_marker = f"{glyph_dir}/checkpoints/byt5_model.pt"
+
+if os.path.exists(glyph_marker):
+    print("Glyph-SDXL-v2 gia' presente, salto.")
+else:
+    print("Scarico Glyph-SDXL-v2 da ModelScope...")
+    from modelscope import snapshot_download as ms_download
+    ms_download("AI-ModelScope/Glyph-SDXL-v2", local_dir=glyph_dir)
+    print("Glyph-SDXL-v2 scaricato.")
+
+print("Download completo.")
