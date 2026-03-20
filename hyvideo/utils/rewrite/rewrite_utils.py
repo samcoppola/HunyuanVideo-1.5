@@ -54,7 +54,11 @@ def t2v_rewrite(user_prompt, rewrite_client=None):
     if rewrite_client is None:
         rewrite_client = _get_t2v_client()
     try:
-        return rewrite_client.run_single_recaption(t2v_rewrite_system_prompt, user_prompt)
+        result = rewrite_client.run_single_recaption(t2v_rewrite_system_prompt, user_prompt)
+        print(f"\n[REWRITE DEBUG] Client: {type(rewrite_client).__name__}")
+        print(f"[REWRITE DEBUG] Input:  {user_prompt[:80]}")
+        print(f"[REWRITE DEBUG] Output: {result[:200]}\n")
+        return result
     except Exception as e:
         raise ValueError(f"Failed to rewrite prompt using {type(rewrite_client).__name__}: {e}")
 
