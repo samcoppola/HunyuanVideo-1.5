@@ -7,7 +7,7 @@
 PROMPT="A breathtaking sunset over the ocean, golden and crimson light reflecting on calm water"
 
 # Imposta la tua API key Anthropic:
-export ANTHROPIC_API_KEY="sk-ant-METTI-QUI-LA-TUA-API-KEY"
+export ANTHROPIC_API_KEY=
 
 # Opzionale: cambia modello Claude (default: claude-sonnet-4-6)
 # export ANTHROPIC_MODEL="claude-opus-4-6"
