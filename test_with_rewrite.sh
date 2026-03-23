@@ -6,9 +6,8 @@
 # CAMBIA IL PROMPT QUI (usa un prompt corto/semplice, ci pensa Claude a espanderlo):
 PROMPT="A breathtaking sunset over the ocean, golden and crimson light reflecting on calm water"
 
-# Imposta la tua API key Anthropic:
-export ANTHROPIC_API_KEY=
-
+# Imposta la tua API key Anthropic PRIMA di lanciare lo script:
+#   export ANTHROPIC_API_KEY="sk-ant-..."
 # Opzionale: cambia modello Claude (default: claude-sonnet-4-6)
 # export ANTHROPIC_MODEL="claude-opus-4-6"
 
