@@ -93,15 +93,19 @@ def load_text_encoder(
             raise ValueError(f"Unsupported text encoder type: {text_encoder_type}")
         text_encoder_path = TEXT_ENCODER_PATH[text_encoder_type]
 
-    text_encoder = AutoModel.from_pretrained(text_encoder_path, low_cpu_mem_usage=True)
+    precision_type = PRECISION_TO_TYPE.get(text_encoder_precision) if text_encoder_precision else None
+    text_encoder = AutoModel.from_pretrained(
+        text_encoder_path,
+        low_cpu_mem_usage=True,
+        torch_dtype=precision_type,
+    )
     
     if hasattr(text_encoder, 'language_model'):
         text_encoder = text_encoder.language_model
     text_encoder.final_layer_norm = text_encoder.norm
     
     # from_pretrained will ensure that the model is in eval mode.
-    if text_encoder_precision is not None:
-        text_encoder = text_encoder.to(dtype=PRECISION_TO_TYPE[text_encoder_precision])
+    # dtype is already set during from_pretrained via torch_dtype
 
     text_encoder.requires_grad_(False)
 
