@@ -11,20 +11,21 @@ token = os.environ.get("HF_TOKEN")
 if not token:
     raise RuntimeError("Set HF_TOKEN before running this script.")
 
-# 1. Download i2v transformer (already done if folder exists)
-transformer_path = "./ckpts/transformer/480p_i2v_distilled"
-if os.path.exists(transformer_path) and len(os.listdir(transformer_path)) > 1:
-    print("transformer/480p_i2v_distilled already present, skipping.")
-else:
-    print("Downloading transformer/480p_i2v_distilled (~33 GB) ...")
-    snapshot_download(
-        repo_id="tencent/HunyuanVideo-1.5",
-        local_dir="./ckpts",
-        allow_patterns=["transformer/480p_i2v_distilled/**"],
-        token=token,
-        local_dir_use_symlinks=False,
-    )
-    print("Transformer done.")
+# 1. Download i2v transformers (already done if folder exists)
+for variant in ["480p_i2v_distilled", "720p_i2v_distilled"]:
+    transformer_path = f"./ckpts/transformer/{variant}"
+    if os.path.exists(transformer_path) and len(os.listdir(transformer_path)) > 1:
+        print(f"transformer/{variant} already present, skipping.")
+    else:
+        print(f"Downloading transformer/{variant} (~33 GB) ...")
+        snapshot_download(
+            repo_id="tencent/HunyuanVideo-1.5",
+            local_dir="./ckpts",
+            allow_patterns=[f"transformer/{variant}/**"],
+            token=token,
+            local_dir_use_symlinks=False,
+        )
+        print(f"transformer/{variant} done.")
 
 print()
 
