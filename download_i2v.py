@@ -1,5 +1,6 @@
 """Download i2v models (transformer + vision_encoder) from HuggingFace."""
 import os
+os.environ["HF_HUB_DISABLE_XET"] = "1"  # disable Xet storage (avoids reconstruction errors)
 from huggingface_hub import snapshot_download
 
 token = os.environ.get("HF_TOKEN")
@@ -14,8 +15,8 @@ snapshot_download(
     repo_id="tencent/HunyuanVideo-1.5",
     local_dir="./ckpts",
     allow_patterns=[
-        "transformer/480p_i2v_distilled/*",
-        "vision_encoder/*",
+        "transformer/480p_i2v_distilled/**",
+        "vision_encoder/**",
     ],
     token=token,
     local_dir_use_symlinks=False,
