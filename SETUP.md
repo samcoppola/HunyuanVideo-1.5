@@ -1,0 +1,130 @@
+# HunyuanVideo 1.5 — RunPod Setup Guide
+
+## Token necessari
+
+| Token | Tipo consigliato | Dove ottenerlo | Quando serve |
+|---|---|---|---|
+| `HF_TOKEN` | **Classic (Read)** | huggingface.co → Settings → Access Tokens | Scaricare i modelli. Il Classic accede automaticamente ai repo gated. Non usare Fine-grained (non ha accesso ai gated di default). |
+| `ANTHROPIC_API_KEY` | Standard | console.anthropic.com | Solo con `REWRITE=true` negli script di generazione |
+
+> **Prerequisito vision-encoder**: prima di scaricare `vision-encoder`, devi aver accettato i termini di `black-forest-labs/FLUX.1-Redux-dev` su HuggingFace con il tuo account.
+
+---
+
+## Caso 1 — Nuovo pod, workspace esistente
+
+Il Network Volume ha già repo, venv e modelli. Basta attivare il venv e impostare i token:
+
+```bash
+cd /workspace/HunyuanVideo-1.5
+git pull                                    # aggiorna il codice
+source .venv/bin/activate
+
+export HF_TOKEN="hf_..."                    # Classic token HF
+export ANTHROPIC_API_KEY="sk-ant-..."       # solo se usi rewrite
+```
+
+Poi lancia lo script di generazione che ti serve (vedi sezione **Generazione**).
+
+---
+
+## Caso 2 — Nuovo workspace (da zero)
+
+### 1. Clona il repo e installa le dipendenze
+
+```bash
+cd /workspace
+git clone https://github.com/samcoppola/HunyuanVideo-1.5.git
+cd HunyuanVideo-1.5
+
+apt-get install -y python3.11 python3.11-venv   # se non già presente
+python3.11 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+### 2. Imposta i token
+
+```bash
+export HF_TOKEN="hf_..."
+export ANTHROPIC_API_KEY="sk-ant-..."    # opzionale, solo per rewrite
+```
+
+### 3. Scarica i modelli
+
+```bash
+# Base — sempre richiesto (text_encoder + vae + scheduler, ~26 GB)
+python download.py base
+
+# Scegli il transformer in base al task (uno alla volta per gestire lo spazio):
+python download.py t2v-480p        # T2V 480p (~33 GB)
+python download.py t2v-720p        # T2V 720p (~33 GB)
+python download.py i2v-480p        # I2V 480p (~33 GB)
+python download.py i2v-720p        # I2V 720p (~59 GB)
+
+# Solo per I2V — richiede accesso a FLUX.1-Redux-dev:
+python download.py vision-encoder  # (~1 GB)
+
+# Opzionale — solo se usi --sr true:
+python download.py sr-1080p        # (~32 GB)
+```
+
+### 4. (Solo I2V) Carica la tua immagine
+
+Carica l'immagine tramite Jupyter in `/workspace/HunyuanVideo-1.5/`.
+
+---
+
+## Modelli disponibili
+
+| Nome | Dimensione | Task | Note |
+|---|---|---|---|
+| `base` | ~26 GB | tutti | text_encoder + vae + scheduler — sempre richiesto |
+| `t2v-480p` | ~33 GB | T2V | risoluzione 768×512 |
+| `t2v-720p` | ~33 GB | T2V | risoluzione 1280×720 |
+| `i2v-480p` | ~33 GB | I2V | risoluzione 768×512 |
+| `i2v-720p` | ~59 GB | I2V | risoluzione 1280×720 |
+| `vision-encoder` | ~1 GB | I2V | SigLIP — richiesto per tutti i task I2V |
+| `sr-1080p` | ~32 GB | tutti | upscaler a 1080p, solo con `--sr true` |
+
+**Spazio minimo per task:**
+- T2V 480p: ~59 GB (base + t2v-480p)
+- T2V 720p: ~59 GB (base + t2v-720p)
+- I2V 480p: ~60 GB (base + i2v-480p + vision-encoder)
+- I2V 720p: ~86 GB (base + i2v-720p + vision-encoder)
+
+**Liberare spazio:** elimina i transformer che non usi:
+```bash
+rm -rf ckpts/transformer/480p_t2v_distilled
+rm -rf ckpts/transformer/720p_i2v_distilled
+rm -rf ckpts/transformer/1080p_sr_distilled   # se non usi sr
+```
+
+---
+
+## Generazione
+
+Ogni script ha le variabili editabili in cima al file (`PROMPT`, `IMAGE_PATH`, `VIDEO_LENGTH`, `REWRITE`).
+
+| Script | Task | Modelli richiesti |
+|---|---|---|
+| `bash run_t2v_480p.sh` | T2V 480p | base + t2v-480p |
+| `bash run_t2v_720p.sh` | T2V 720p | base + t2v-720p |
+| `bash run_i2v_480p.sh` | I2V 480p | base + i2v-480p + vision-encoder |
+| `bash run_i2v_720p.sh` | I2V 720p | base + i2v-720p + vision-encoder |
+
+```bash
+export ANTHROPIC_API_KEY="sk-ant-..."
+bash run_i2v_720p.sh
+```
+
+I video vengono salvati in `./outputs/`.
+
+### Parametri utili
+
+| Parametro | Valori | Note |
+|---|---|---|
+| `VIDEO_LENGTH` | 33 / 65 / 97 | frames: 33≈2s, 65≈4s, 97≈6s |
+| `REWRITE` | true / false | Claude ottimizza il prompt (cinese, più efficace) |
+| `--sr true` | — | Upscala a 1080p, richiede sr-1080p scaricato |
