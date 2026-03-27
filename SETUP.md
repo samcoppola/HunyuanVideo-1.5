@@ -78,17 +78,20 @@ Carica l'immagine tramite Jupyter in `/workspace/HunyuanVideo-1.5/`.
 
 ## Modelli disponibili
 
-| Nome | Dimensione | Task | Note |
-|---|---|---|---|
-| `base` | ~26 GB | tutti | text_encoder + vae + scheduler — sempre richiesto |
-| `t2v-480p` | ~33 GB | T2V | risoluzione 768×512 |
-| `t2v-720p` | ~33 GB | T2V | risoluzione 1280×720 |
-| `i2v-480p` | ~33 GB | I2V | risoluzione 768×512 |
-| `i2v-720p` | ~59 GB | I2V | risoluzione 1280×720 |
-| `vision-encoder` | ~1 GB | I2V | SigLIP — richiesto per tutti i task I2V |
-| `sr-1080p` | ~32 GB | tutti | upscaler a 1080p, solo con `--sr true` |
+| Nome | Disco | VRAM minima | GPU consigliata | Task | Note |
+|---|---|---|---|---|---|
+| `base` | ~26 GB | — | — | tutti | text_encoder + vae + scheduler — **sempre richiesto** |
+| `t2v-480p` | ~33 GB | **24 GB** | RTX 3090 / 4090 | T2V | risoluzione 768×512 |
+| `t2v-720p` | ~33 GB | **40 GB** | A100 40GB | T2V | risoluzione 1280×720 |
+| `i2v-480p` | ~33 GB | **24 GB** | RTX 3090 / 4090 | I2V | risoluzione 768×512 |
+| `i2v-720p` | ~59 GB | **40 GB** | A100 40GB | I2V | risoluzione 1280×720 |
+| `vision-encoder` | ~1 GB | ~1 GB extra | — | I2V | SigLIP — **richiesto per tutti i task I2V** |
+| `sr-1080p` | ~32 GB | +8 GB extra | A100 40GB+ | tutti | upscaler a 1080p, solo con `--sr true` |
 
-**Spazio minimo per task:**
+> La VRAM indicata è con group offloading attivo (`--overlap_group_offloading false`).
+> Senza offloading servirebbero 80+ GB di VRAM.
+
+**Spazio disco minimo per task:**
 - T2V 480p: ~59 GB (base + t2v-480p)
 - T2V 720p: ~59 GB (base + t2v-720p)
 - I2V 480p: ~60 GB (base + i2v-480p + vision-encoder)
