@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# RunPod Setup Script — HunyuanVideo 1.5
+# RunPod Setup Script — HunyuanVideo 1.5  (I2V best quality)
 # =============================================================================
 # Run once after attaching the Network Volume to your pod.
 # Usage:
@@ -9,12 +9,14 @@
 # What it does:
 #   1. Clones the repo (fork with all patches)
 #   2. Creates a Python venv and installs dependencies
-#   3. Downloads model weights from HuggingFace
+#   3. Downloads model weights: base + i2v-720p + vision-encoder + sr-1080p
 #
 # Requirements:
-#   - Network Volume mounted at /workspace
-#   - HuggingFace token in HF_TOKEN env var (for gated models)
+#   - Network Volume mounted at /workspace  (200 GB recommended)
+#   - HuggingFace token in HF_TOKEN env var (Classic token, gated model access)
 #     export HF_TOKEN="hf_..."
+#   - HF access accepted for: black-forest-labs/FLUX.1-Redux-dev
+#     (required for vision_encoder)
 # =============================================================================
 
 set -e  # Exit on error
@@ -22,10 +24,9 @@ set -e  # Exit on error
 WORKSPACE="/workspace"
 REPO_DIR="$WORKSPACE/HunyuanVideo-1.5"
 CKPTS_DIR="$REPO_DIR/ckpts"
-HF_REPO="tencent/HunyuanVideo-1.5"
 
 echo "============================================================"
-echo " HunyuanVideo 1.5 — RunPod Setup"
+echo " HunyuanVideo 1.5 — RunPod Setup (I2V best quality)"
 echo "============================================================"
 
 # ── 1. Clone repo ────────────────────────────────────────────────
@@ -45,8 +46,6 @@ cd "$REPO_DIR"
 echo ""
 echo "[2/4] Setting up Python virtual environment..."
 
-# Ensure python3.11 + venv are available (RunPod base images ship Python 3.8
-# which has no venv candidate in apt).
 if ! command -v python3.11 &>/dev/null; then
     apt-get install -y python3.11 python3.11-venv
 fi
@@ -66,55 +65,15 @@ echo "    Dependencies installed."
 
 # ── 3. Download model weights ─────────────────────────────────────
 echo ""
-echo "[3/4] Downloading model weights (~58 GB for T2V 480p distilled)..."
-echo "      This will take several minutes depending on your connection."
+echo "[3/4] Downloading model weights (~118 GB total)..."
+echo "      base (~26 GB) + i2v-720p (~59 GB) + vision-encoder (~1 GB) + sr-1080p (~32 GB)"
+echo "      This will take 15-30 minutes depending on your connection."
 
 mkdir -p "$CKPTS_DIR"
 
-# Use huggingface_hub Python API for reliable large-file downloads
-"$REPO_DIR/.venv/bin/python" - <<'PYEOF'
-import os
-from huggingface_hub import snapshot_download
-
-repo_id = "tencent/HunyuanVideo-1.5"
-local_dir = os.environ.get("CKPTS_DIR", "/workspace/HunyuanVideo-1.5/ckpts")
-token = os.environ.get("HF_TOKEN", None)
-
-# Download everything EXCEPT transformer variants we don't need yet.
-# Edit this list to add more variants later.
-ignore_patterns = [
-    # Skip transformer variants not needed for the first T2V test.
-    # Remove lines below when you want those variants.
-    "transformer/720p_t2v/*",
-    "transformer/720p_t2v_distilled/*",
-    "transformer/480p_i2v/*",
-    "transformer/480p_i2v_distilled/*",
-    "transformer/480p_i2v_step_distilled/*",
-    "transformer/720p_i2v/*",
-    "transformer/720p_i2v_distilled/*",
-    # Skip SR upsampler for now (only needed with --sr true)
-    "upsampler/*",
-    # Skip vision encoder (only needed for I2V tasks)
-    "vision_encoder/*",
-    # Skip large binary assets folder
-    "assets/*",
-]
-
-print(f"Downloading to: {local_dir}")
-print("Included: text_encoder, vae, scheduler, transformer/480p_t2v_distilled")
-print("Skipped:  720p variants, I2V variants, upsampler, vision_encoder")
-print()
-
-snapshot_download(
-    repo_id=repo_id,
-    local_dir=local_dir,
-    ignore_patterns=ignore_patterns,
-    token=token,
-    local_dir_use_symlinks=False,
-)
-
-print("Download complete!")
-PYEOF
+# download.py gestisce ogni modello in modo modulare e salta quelli già presenti.
+# vision-encoder richiede accesso HF a black-forest-labs/FLUX.1-Redux-dev.
+"$REPO_DIR/.venv/bin/python" download.py base i2v-720p vision-encoder sr-1080p
 
 # ── 4. Verify structure ───────────────────────────────────────────
 echo ""
@@ -128,7 +87,9 @@ required = [
     "text_encoder",
     "vae",
     "scheduler",
-    "transformer/480p_t2v_distilled",
+    "transformer/720p_i2v_distilled",
+    "vision_encoder/siglip/image_encoder",
+    "transformer/1080p_sr_distilled",
 ]
 
 all_ok = True
@@ -140,7 +101,7 @@ for path in required:
     print(f"  [{status}] {path}")
 
 if all_ok:
-    print("\nAll required files found. Ready to generate!")
+    print("\nAll required files found. Ready for best-quality I2V!")
 else:
     print("\nSome files are missing. Check the download logs above.")
 PYEOF
@@ -153,23 +114,18 @@ echo "============================================================"
 echo ""
 echo "Next steps:"
 echo ""
-echo "  1. Set your Anthropic API key:"
+echo "  1. Carica appia_strada.png nella root del repo:"
+echo "     /workspace/HunyuanVideo-1.5/appia_strada.png"
+echo ""
+echo "  2. Imposta la tua Anthropic API key:"
 echo "     export ANTHROPIC_API_KEY=\"sk-ant-...\""
 echo ""
-echo "  2. Run test WITHOUT prompt rewriting:"
-echo "     cd $REPO_DIR && bash test_no_rewrite.sh"
+echo "  3. Lancia la generazione massima qualità:"
+echo "     cd $REPO_DIR && bash run_via_appia.sh"
 echo ""
-echo "  3. Run test WITH Claude prompt rewriting:"
-echo "     cd $REPO_DIR && bash test_with_rewrite.sh"
-echo "     (edit the PROMPT and ANTHROPIC_API_KEY inside first)"
+echo "  Output: ./outputs/via_appia_1080p.mp4  (1080p con SR)"
+echo "          ./outputs/via_appia_1080p_pre_sr.mp4  (720p originale)"
 echo ""
-echo "  4. Run the conversational Video Subagent:"
-echo "     cd $REPO_DIR && source .venv/bin/activate"
-echo "     python video_subagent.py"
-echo "     # or: python video_subagent.py --auto \"video di un vecchio che fuma la pipa\""
-echo ""
-echo "  Output videos will be saved to: $REPO_DIR/outputs/"
-echo ""
-echo "  To download more model variants later (720p, I2V, etc.),"
-echo "  edit the ignore_patterns in this script and run it again."
+echo "  Per altri task usa gli script run_t2v_*.sh / run_i2v_*.sh"
+echo "  oppure scarica altri transformer con download.py"
 echo "============================================================"

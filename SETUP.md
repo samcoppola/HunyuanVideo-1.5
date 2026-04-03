@@ -96,6 +96,7 @@ Carica l'immagine tramite Jupyter in `/workspace/HunyuanVideo-1.5/`.
 - T2V 720p: ~59 GB (base + t2v-720p)
 - I2V 480p: ~60 GB (base + i2v-480p + vision-encoder)
 - I2V 720p: ~86 GB (base + i2v-720p + vision-encoder)
+- **I2V 720p + SR 1080p: ~118 GB** (base + i2v-720p + vision-encoder + sr-1080p) ← massima qualità
 
 **Liberare spazio:** elimina i transformer che non usi:
 ```bash
@@ -116,10 +117,11 @@ Ogni script ha le variabili editabili in cima al file (`PROMPT`, `IMAGE_PATH`, `
 | `bash run_t2v_720p.sh` | T2V 720p | base + t2v-720p |
 | `bash run_i2v_480p.sh` | I2V 480p | base + i2v-480p + vision-encoder |
 | `bash run_i2v_720p.sh` | I2V 720p | base + i2v-720p + vision-encoder |
+| **`bash run_via_appia.sh`** | **I2V 720p→1080p** | **base + i2v-720p + vision-encoder + sr-1080p** |
 
 ```bash
 export ANTHROPIC_API_KEY="sk-ant-..."
-bash run_i2v_720p.sh
+bash run_via_appia.sh
 ```
 
 I video vengono salvati in `./outputs/`.
@@ -129,5 +131,17 @@ I video vengono salvati in `./outputs/`.
 | Parametro | Valori | Note |
 |---|---|---|
 | `VIDEO_LENGTH` | 33 / 65 / 97 | frames: 33≈2s, 65≈4s, 97≈6s |
-| `REWRITE` | true / false | Claude ottimizza il prompt (cinese, più efficace) |
+| `REWRITE` | true / false | Claude ottimizza il prompt in cinese (più efficace) |
 | `--sr true` | — | Upscala a 1080p, richiede sr-1080p scaricato |
+| `--enable_cache false` | — | Disabilita deepcache per massima qualità (più lento) |
+| `--save_pre_sr_video` | — | Salva anche il video 720p prima dell'upscaling |
+
+### GPU consigliate per massima qualità (I2V 720p + SR)
+
+| GPU | VRAM | Costo RunPod | Note |
+|---|---|---|---|
+| A100 40GB PCIe | 40 GB | ~$1.89/h | Minimo per 720p; usa `--overlap_group_offloading false` |
+| A100 80GB SXM | 80 GB | ~$2.99/h | Consigliato: margine sufficiente, più rapido |
+| H100 SXM | 80 GB | ~$4.69/h | Massima velocità, non necessario per qualità |
+
+> Con A100 40GB la generazione di 97 frame a 720p + SR richiede ~10-15 minuti.

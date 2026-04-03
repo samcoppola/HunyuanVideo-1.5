@@ -1,24 +1,60 @@
 #!/bin/bash
+# ============================================================
+# Via Appia Antica — I2V 720p → SR 1080p, massima qualità
+# Modelli richiesti:
+#   python download.py base i2v-720p vision-encoder sr-1080p
+# GPU minima: A100 40GB  (consigliata: A100 80GB)
+# Tempo stimato: ~8-12 min su A100 40GB
+# ============================================================
 set -e
 
 cd /workspace/HunyuanVideo-1.5
 source .venv/bin/activate
 
 if [ -z "$ANTHROPIC_API_KEY" ]; then
-    echo "ERROR: set ANTHROPIC_API_KEY first"
+    echo "ERROR: ANTHROPIC_API_KEY non impostata."
+    echo "       export ANTHROPIC_API_KEY='sk-ant-...'"
     exit 1
 fi
+
+IMAGE_PATH="./appia_strada.png"
+if [ ! -f "$IMAGE_PATH" ]; then
+    echo "ERROR: immagine non trovata in $IMAGE_PATH"
+    echo "       Carica appia_strada.png nella root del repo."
+    exit 1
+fi
+
+mkdir -p ./outputs
+
+# ── Parametri per massima qualità ───────────────────────────
+# - 720p: risoluzione nativa 1280x720, poi SR porta a 1920x1080
+# - 97 frames: ~6 secondi a 16fps (ottimale per confronto con Kling)
+# - sr true: upscala a 1080p con il modello sr-1080p
+# - enable_cache false: nessuna approssimazione deepcache/teacache
+# - cfg_distilled: modello stabile a 50 step (default)
+# - rewrite true: Claude riscrive il prompt in cinese (come il training)
+# - overlap_group_offloading false: sicuro su A100 40GB
+# ─────────────────────────────────────────────────────────────
+
+PROMPT="Slow forward camera walk along the Via Appia Antica. The camera glides smoothly forward at eye level along the ancient cobblestone road, gently tilting left and right to observe the monumental Roman tombs. Distant Roman figures in tunics walk slowly ahead. Sparse vegetation sways lightly in the breeze. Cinematic, first-person perspective, photorealistic, no modern elements."
 
 python generate.py \
     --model_path ./ckpts \
     --resolution 720p \
-    --prompt "A highly realistic cinematic video of ancient Rome, slow forward walking movement along the Via Appia Antica during the Roman Imperial period. The road is paved with large irregular basalt stones, slightly worn and uneven. On both sides monumental Roman tombs, mausoleums, funerary architectures of different shapes: cylindrical tombs, temple-like structures with columns, pyramidal roofs, statues, relief decorations. Bright daylight, warm natural sunlight, soft shadows, slightly dusty atmosphere. Camera at eye level moving slowly forward, smooth and stable with slight natural head motion, gently looking right and left at architectural details. A few distant Roman figures in tunics. Sparse vegetation, Roman umbrella pine trees in background. Ultra-realistic textures, physically accurate lighting, cinematic depth of field, first-person perspective, photorealistic, no modern elements." \
-    --image_path ./appia_strada.png \
+    --prompt "$PROMPT" \
+    --image_path "$IMAGE_PATH" \
+    --aspect_ratio 16:9 \
     --cfg_distilled \
-    --sr false \
+    --num_inference_steps 50 \
+    --video_length 97 \
+    --sr true \
+    --save_pre_sr_video \
     --rewrite true \
-    --video_length 33 \
+    --enable_cache false \
     --overlap_group_offloading false \
-    --output_path ./outputs/via_appia.mp4
+    --output_path ./outputs/via_appia_1080p.mp4
 
-echo "Done! Video saved to ./outputs/via_appia.mp4"
+echo ""
+echo "Done!"
+echo "  Video 1080p: ./outputs/via_appia_1080p.mp4"
+echo "  Video 720p pre-SR: ./outputs/via_appia_1080p_pre_sr.mp4"
