@@ -30,7 +30,38 @@ Poi lancia lo script di generazione che ti serve (vedi sezione **Generazione**).
 
 ## Caso 2 — Nuovo workspace (da zero)
 
-### 1. Clona il repo e installa le dipendenze
+### Opzione A — Pod CPU + Pod GPU (consigliato, risparmia denaro)
+
+Il download da ~118 GB non richiede GPU. Farlo su un pod CPU (~$0.02/h) e poi
+switchare alla A100 solo per installare il venv e generare (~20 min, ~$0.63).
+
+**Step 1 — Pod CPU** (qualsiasi template con Python):
+```bash
+export HF_TOKEN="hf_..."
+bash setup_cpu.sh         # clone + download ~118 GB, 30-60 min
+```
+Poi **ferma il pod CPU** e crea un pod A100 attaccando lo stesso Network Volume.
+
+**Step 2 — Pod A100** (modelli già sul volume):
+```bash
+export HF_TOKEN="hf_..."
+bash setup_runpod.sh      # crea venv + pip install; salta download (già presenti)
+```
+
+---
+
+### Opzione B — Solo pod GPU (tutto in uno)
+
+```bash
+export HF_TOKEN="hf_..."
+bash setup_runpod.sh      # clone + venv + download + verifica
+```
+
+---
+
+### Dettaglio manuale (senza script)
+
+#### 1. Clona il repo e installa le dipendenze
 
 ```bash
 cd /workspace

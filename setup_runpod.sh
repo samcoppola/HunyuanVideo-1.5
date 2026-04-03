@@ -65,14 +65,14 @@ echo "    Dependencies installed."
 
 # ── 3. Download model weights ─────────────────────────────────────
 echo ""
-echo "[3/4] Downloading model weights (~118 GB total)..."
-echo "      base (~26 GB) + i2v-720p (~59 GB) + vision-encoder (~1 GB) + sr-1080p (~32 GB)"
-echo "      This will take 15-30 minutes depending on your connection."
+echo "[3/4] Downloading model weights..."
+echo "      Se hai già eseguito setup_cpu.sh, i modelli sono già presenti"
+echo "      e download.py skipperà tutto in pochi secondi."
 
 mkdir -p "$CKPTS_DIR"
 
-# download.py gestisce ogni modello in modo modulare e salta quelli già presenti.
-# vision-encoder richiede accesso HF a black-forest-labs/FLUX.1-Redux-dev.
+# download.py skippa automaticamente i modelli già presenti.
+# Se vuoi saltare del tutto il controllo: commenta la riga sotto.
 "$REPO_DIR/.venv/bin/python" download.py base i2v-720p vision-encoder sr-1080p
 
 # ── 4. Verify structure ───────────────────────────────────────────
