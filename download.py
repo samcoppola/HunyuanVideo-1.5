@@ -35,9 +35,27 @@ if not HF_TOKEN:
     print("       Run: export HF_TOKEN='hf_...'")
     sys.exit(1)
 
+
+def _download_glyph(ckpts):
+    """Scarica Glyph-SDXL-v2 da ModelScope (non presente su HuggingFace)."""
+    dest = f"{ckpts}/text_encoder/Glyph-SDXL-v2"
+    marker = f"{dest}/checkpoints/byt5_model.pt"
+    if os.path.exists(marker):
+        print(f"  Already present ({dest}) — skipping.")
+        return
+    try:
+        from modelscope import snapshot_download as ms_dl
+    except ImportError:
+        print("  ERROR: modelscope non installato. Esegui: pip install modelscope")
+        sys.exit(1)
+    print("  Downloading Glyph-SDXL-v2 from ModelScope...")
+    ms_dl("AI-ModelScope/Glyph-SDXL-v2", local_dir=dest)
+    print("  Done.")
+
+
 MODELS = {
     "base": {
-        "desc": "text_encoder + vae + scheduler (~26 GB)",
+        "desc": "text_encoder + vae + scheduler + Glyph-SDXL-v2 (~26 GB)",
         "downloads": [
             {
                 "repo": "tencent/HunyuanVideo-1.5",
@@ -46,6 +64,7 @@ MODELS = {
                 "check_path": f"{CKPTS}/text_encoder",
             }
         ],
+        "post": _download_glyph,
     },
     "t2v-480p": {
         "desc": "480p text-to-video distilled transformer (~33 GB)",
@@ -145,6 +164,9 @@ def download_model(name):
             local_dir_use_symlinks=False,
         )
         print(f"  Done.")
+
+    if "post" in model:
+        model["post"](CKPTS)
 
 
 if __name__ == "__main__":
