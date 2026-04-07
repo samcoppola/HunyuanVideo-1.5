@@ -44,19 +44,23 @@ else
 fi
 cd "$REPO_DIR"
 
-# ── 2. Installa solo huggingface_hub nel Python di sistema ─────────
+# ── 2. Installa dipendenze Python di sistema ──────────────────────
 # Non creiamo il venv qui: torch richiederebbe CUDA per la versione GPU.
 # Il venv completo viene creato dopo su GPU con setup_runpod.sh.
+# huggingface_hub: per i download HF
+# modelscope: per Glyph-SDXL-v2 (non è su HuggingFace)
 echo ""
-echo "[2/3] Installo huggingface_hub nel Python di sistema..."
-pip install -q huggingface_hub
+echo "[2/3] Installo huggingface_hub e modelscope nel Python di sistema..."
+pip install -q huggingface_hub modelscope
 echo "    OK."
 
-# ── 3. Scarica modelli (~118 GB) ───────────────────────────────────
+# ── 3. Scarica modelli (~134 GB) ──────────────────────────────────
 echo ""
-echo "[3/3] Download modelli (~118 GB)..."
-echo "      base (~26 GB) + i2v-720p (~59 GB)"
-echo "      + vision-encoder (~1 GB) + sr-1080p (~32 GB)"
+echo "[3/3] Download modelli (~134 GB)..."
+echo "      base (~42 GB: LLM+byT5+Glyph+VAE+scheduler)"
+echo "      + i2v-720p (~59 GB)"
+echo "      + vision-encoder (~1 GB)"
+echo "      + sr-1080p (~32 GB: transformer + upsampler)"
 echo ""
 
 python download.py base i2v-720p vision-encoder sr-1080p
