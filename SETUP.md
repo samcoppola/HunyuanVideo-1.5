@@ -111,7 +111,7 @@ Carica l'immagine tramite Jupyter in `/workspace/HunyuanVideo-1.5/`.
 
 | Nome | Disco | VRAM minima | GPU consigliata | Task | Note |
 |---|---|---|---|---|---|
-| `base` | ~26 GB | — | — | tutti | text_encoder + vae + scheduler — **sempre richiesto** |
+| `base` | ~42 GB | — | — | tutti | text_encoder (LLM Qwen+byT5+Glyph) + vae + scheduler — **sempre richiesto** |
 | `t2v-480p` | ~33 GB | **24 GB** | RTX 3090 / 4090 | T2V | risoluzione 768×512 |
 | `t2v-720p` | ~33 GB | **40 GB** | A100 40GB | T2V | risoluzione 1280×720 |
 | `i2v-480p` | ~33 GB | **24 GB** | RTX 3090 / 4090 | I2V | risoluzione 768×512 |
@@ -127,7 +127,7 @@ Carica l'immagine tramite Jupyter in `/workspace/HunyuanVideo-1.5/`.
 - T2V 720p: ~59 GB (base + t2v-720p)
 - I2V 480p: ~60 GB (base + i2v-480p + vision-encoder)
 - I2V 720p: ~86 GB (base + i2v-720p + vision-encoder)
-- **I2V 720p + SR 1080p: ~118 GB** (base + i2v-720p + vision-encoder + sr-1080p) ← massima qualità
+- **I2V 720p + SR 1080p: ~134 GB** (base + i2v-720p + vision-encoder + sr-1080p) ← massima qualità
 
 **Liberare spazio:** elimina i transformer che non usi:
 ```bash

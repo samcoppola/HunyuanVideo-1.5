@@ -55,16 +55,31 @@ def _download_glyph(ckpts):
 
 MODELS = {
     "base": {
-        "desc": "text_encoder + vae + scheduler + Glyph-SDXL-v2 (~26 GB)",
+        "desc": "text_encoder (LLM+byT5+Glyph) + vae + scheduler (~42 GB)",
         "downloads": [
             {
+                # DiT support files: VAE, scheduler, text_encoder skeleton
                 "repo": "tencent/HunyuanVideo-1.5",
                 "local_dir": CKPTS,
                 "patterns": ["text_encoder/**", "vae/**", "scheduler/**"],
                 "check_path": f"{CKPTS}/text_encoder",
-            }
+            },
+            {
+                # LLM text encoder (Qwen2.5-VL-7B-Instruct, ~15 GB)
+                "repo": "Qwen/Qwen2.5-VL-7B-Instruct",
+                "local_dir": f"{CKPTS}/text_encoder/llm",
+                "patterns": ["**"],
+                "check_path": f"{CKPTS}/text_encoder/llm",
+            },
+            {
+                # byT5 small encoder (~1.2 GB)
+                "repo": "google/byt5-small",
+                "local_dir": f"{CKPTS}/text_encoder/byt5-small",
+                "patterns": ["**"],
+                "check_path": f"{CKPTS}/text_encoder/byt5-small",
+            },
         ],
-        "post": _download_glyph,
+        "post": _download_glyph,  # Glyph-SDXL-v2 da ModelScope
     },
     "t2v-480p": {
         "desc": "480p text-to-video distilled transformer (~33 GB)",
