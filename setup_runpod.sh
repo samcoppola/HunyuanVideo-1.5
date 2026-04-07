@@ -89,7 +89,7 @@ required = [
     "scheduler",
     "transformer/720p_i2v_distilled",
     "vision_encoder/siglip/image_encoder",
-    "transformer/1080p_sr_distilled",
+    "upsampler/1080p_sr_distilled",
 ]
 
 all_ok = True

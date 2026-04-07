@@ -142,8 +142,8 @@ MODELS = {
             {
                 "repo": "tencent/HunyuanVideo-1.5",
                 "local_dir": CKPTS,
-                "patterns": ["transformer/1080p_sr_distilled/**"],
-                "check_path": f"{CKPTS}/transformer/1080p_sr_distilled",
+                "patterns": ["upsampler/1080p_sr_distilled/**"],
+                "check_path": f"{CKPTS}/upsampler/1080p_sr_distilled",
             }
         ],
     },
