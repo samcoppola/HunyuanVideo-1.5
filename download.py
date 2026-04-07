@@ -137,14 +137,22 @@ MODELS = {
         ],
     },
     "sr-1080p": {
-        "desc": "1080p super-resolution upsampler (~32 GB)",
+        "desc": "1080p SR transformer + upsampler (~32 GB)",
         "downloads": [
             {
+                # SR diffusion transformer
+                "repo": "tencent/HunyuanVideo-1.5",
+                "local_dir": CKPTS,
+                "patterns": ["transformer/1080p_sr_distilled/**"],
+                "check_path": f"{CKPTS}/transformer/1080p_sr_distilled",
+            },
+            {
+                # SR upsampler network (separate model)
                 "repo": "tencent/HunyuanVideo-1.5",
                 "local_dir": CKPTS,
                 "patterns": ["upsampler/1080p_sr_distilled/**"],
                 "check_path": f"{CKPTS}/upsampler/1080p_sr_distilled",
-            }
+            },
         ],
     },
 }
