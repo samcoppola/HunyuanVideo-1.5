@@ -23,7 +23,7 @@ fi
 
 mkdir -p ./outputs
 
-python generate.py \
+torchrun --nproc_per_node=1 generate.py \
     --model_path ./ckpts \
     --resolution 480p \
     --prompt "$PROMPT" \

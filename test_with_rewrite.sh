@@ -13,7 +13,7 @@ PROMPT="A breathtaking sunset over the ocean, golden and crimson light reflectin
 
 source .venv/bin/activate
 
-python generate.py \
+torchrun --nproc_per_node=1 generate.py \
     --model_path ./ckpts \
     --resolution 480p \
     --prompt "$PROMPT" \

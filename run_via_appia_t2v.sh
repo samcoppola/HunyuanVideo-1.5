@@ -9,7 +9,7 @@ if [ -z "$ANTHROPIC_API_KEY" ]; then
     exit 1
 fi
 
-python generate.py \
+torchrun --nproc_per_node=1 generate.py \
     --model_path ./ckpts \
     --resolution 480p \
     --prompt "A highly realistic cinematic video of ancient Rome. First-person perspective walking slowly forward along the Via Appia Antica during the Roman Imperial period. The road is paved with large irregular basalt stones, slightly worn and uneven. On both sides monumental Roman tombs, mausoleums, funerary architectures of different shapes: cylindrical tombs, temple-like structures with columns, pyramidal roofs, statues, relief decorations. Bright daylight, warm natural sunlight, soft shadows, slightly dusty atmosphere. Camera at eye level moving slowly forward, smooth and stable with slight natural head motion, gently looking right and left at architectural details. A few distant Roman figures in tunics. Sparse vegetation, Roman umbrella pine trees in background. Ultra-realistic textures, physically accurate lighting, cinematic depth of field, photorealistic, no modern elements." \

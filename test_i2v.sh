@@ -18,7 +18,7 @@ echo "Avvio test I2V 720p — 33 frame, no rewrite, no SR..."
 echo "Dovresti vedere output immediato qui sotto:"
 echo ""
 
-PYTHONUNBUFFERED=1 python generate.py \
+PYTHONUNBUFFERED=1 torchrun --nproc_per_node=1 generate.py \
     --model_path ./ckpts \
     --resolution 720p \
     --prompt "Slow forward camera walk along the Via Appia Antica in ancient Rome." \

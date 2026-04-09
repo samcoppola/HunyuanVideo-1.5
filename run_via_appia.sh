@@ -38,7 +38,7 @@ mkdir -p ./outputs
 
 PROMPT="Slow forward camera walk along the Via Appia Antica. The camera glides smoothly forward at eye level along the ancient cobblestone road, gently tilting left and right to observe the monumental Roman tombs. Distant Roman figures in tunics walk slowly ahead. Sparse vegetation sways lightly in the breeze. Cinematic, first-person perspective, photorealistic, no modern elements."
 
-python generate.py \
+torchrun --nproc_per_node=1 generate.py \
     --model_path ./ckpts \
     --resolution 720p \
     --prompt "$PROMPT" \
