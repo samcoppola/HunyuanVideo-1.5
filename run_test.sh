@@ -1,5 +1,5 @@
 #!/bin/bash
-source .venv/bin/activate
+source /root/.venv/bin/activate
 torchrun --nproc_per_node=1 generate.py \
     --model_path ./ckpts \
     --resolution 480p \

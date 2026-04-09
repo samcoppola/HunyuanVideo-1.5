@@ -5,7 +5,7 @@
 set -e
 
 cd /workspace/HunyuanVideo-1.5
-source .venv/bin/activate
+source /root/.venv/bin/activate
 
 if [ ! -f "./appia_strada.png" ]; then
     echo "ERROR: appia_strada.png non trovata. Caricala nella root del repo."

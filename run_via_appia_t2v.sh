@@ -2,7 +2,7 @@
 set -e
 
 cd /workspace/HunyuanVideo-1.5
-source .venv/bin/activate
+source /root/.venv/bin/activate
 
 if [ -z "$ANTHROPIC_API_KEY" ]; then
     echo "ERROR: set ANTHROPIC_API_KEY first"

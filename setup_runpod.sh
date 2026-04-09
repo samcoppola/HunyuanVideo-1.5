@@ -52,11 +52,11 @@ fi
 
 PYTHON=python3.11
 
-if [ ! -d ".venv" ]; then
-    $PYTHON -m venv .venv
+if [ ! -d "/root/.venv" ]; then
+    $PYTHON -m venv /root/.venv
 fi
 
-source .venv/bin/activate
+source /root/.venv/bin/activate
 
 pip install --upgrade pip -q
 pip install -r requirements.txt
@@ -73,13 +73,13 @@ mkdir -p "$CKPTS_DIR"
 
 # download.py skippa automaticamente i modelli già presenti.
 # Se vuoi saltare del tutto il controllo: commenta la riga sotto.
-"$REPO_DIR/.venv/bin/python" download.py base i2v-720p vision-encoder sr-1080p
+"/root/.venv/bin/python" download.py base i2v-720p vision-encoder sr-1080p
 
 # ── 4. Verify structure ───────────────────────────────────────────
 echo ""
 echo "[4/4] Verifying checkpoint structure..."
 
-"$REPO_DIR/.venv/bin/python" - <<'PYEOF'
+"/root/.venv/bin/python" - <<'PYEOF'
 import os
 
 base = "/workspace/HunyuanVideo-1.5/ckpts"

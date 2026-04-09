@@ -7,7 +7,7 @@
 set -e
 
 cd /workspace/HunyuanVideo-1.5
-source .venv/bin/activate
+source /root/.venv/bin/activate
 
 # ── Edit these ───────────────────────────────────────────────
 PROMPT="Your prompt here"

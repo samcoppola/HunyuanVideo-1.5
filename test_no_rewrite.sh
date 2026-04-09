@@ -5,7 +5,7 @@
 # CAMBIA IL PROMPT QUI:
 PROMPT="A breathtaking sunset over the ocean, golden and crimson light reflecting on calm water"
 
-source .venv/bin/activate
+source /root/.venv/bin/activate
 
 torchrun --nproc_per_node=1 generate.py \
     --model_path ./ckpts \

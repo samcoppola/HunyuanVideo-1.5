@@ -11,7 +11,7 @@ PROMPT="A breathtaking sunset over the ocean, golden and crimson light reflectin
 # Opzionale: cambia modello Claude (default: claude-sonnet-4-6)
 # export ANTHROPIC_MODEL="claude-opus-4-6"
 
-source .venv/bin/activate
+source /root/.venv/bin/activate
 
 torchrun --nproc_per_node=1 generate.py \
     --model_path ./ckpts \
